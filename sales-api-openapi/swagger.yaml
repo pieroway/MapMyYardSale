@@ -1,0 +1,376 @@
+openapi: 3.0.0
+
+info:
+  description: This is a Garage Sales mapping API
+  version: "1.0.0"
+  title: Garage Sales API
+  contact:
+    email: alan.pieroway@gmail.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+  - name: developers
+    description: Operations available to regular developers
+
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/pieroway/sales-api-openapi/1.0.0
+  - url: http://api.pieroway.com/v1
+    description: Main (production) server
+  - url: http://staging-api.pieroway.com
+    description: Internal staging server for testing
+  - url: http://localhost:8080
+    description: Local dev server
+
+paths:
+
+  /categories/{id}:
+    get:
+      tags:
+        - developers
+      summary: Get a category by id
+      operationId: getCategory
+      parameters:
+        - in: path
+          name: id
+          schema:
+            $ref: '#/components/schemas/Id'
+          required: true
+          description: id of the category to get      
+      responses:
+        '200':
+          description: gets category by id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+    delete:
+      tags:
+        - developers
+      summary: Delete a category by id
+      operationId: deleteCategory
+      parameters:
+        - in: path
+          name: id
+          schema:
+            $ref: '#/components/schemas/Id'
+          required: true
+          description: id of the category to delete      
+      responses:
+        '204':
+          description: 'category was deleted'
+        '404':
+          description: 'category not found'
+
+  /categories:
+    post:
+      tags:
+        - developers
+      summary: Adds a category
+      operationId: addCategory
+      description: Adds a category to the system
+      responses:
+        '201':
+          description: category created
+        '400':
+          description: 'invalid input, object invalid'
+        '409':
+          description: an existing item already exists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+        description: Category to add
+    get:
+      tags:
+        - developers
+      summary: Gets all categories
+      operationId: getCategories
+      description: |
+        Returns array of categories.
+      responses:
+        '200':
+          description: gets all categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+                example:
+                  - name: 'Single-Family'
+                    id: 'a45dd0a7-aaaa-443c-95c6-cfa855346784'
+                    description: 'One house, one family, garage sale event.'
+                  - name: 'Multi-Family'
+                    id: 'a45dd0a7-aaaa-443c-95c6-cfa855346784'
+                    description: 'Multi-house, Multi family, garage sale event.'
+
+  /events/{id}:
+    get:
+      tags:
+        - developers
+      summary: Get an event by id
+      operationId: getEvent
+      parameters:
+        - in: path
+          name: id
+          schema:
+            $ref: '#/components/schemas/Id'
+          required: true
+          description: id of the event to get      
+      responses:
+        '200':
+          description: gets event by id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+    delete:
+      tags:
+        - developers
+      summary: Delete an event by id
+      operationId: deletEvent
+      parameters:
+        - in: path
+          name: id
+          schema:
+            $ref: '#/components/schemas/Id'
+          required: true
+          description: id of the event to delete      
+      responses:
+        '204':
+          description: 'event was deleted'
+        '404':
+          description: 'event not found'
+
+  /events:
+    post:
+      tags:
+        - developers
+      summary: Adds an event
+      operationId: addEvent
+      description: Adds an event to the system
+      responses:
+        '201':
+          description: event created
+        '400':
+          description: 'invalid input, object invalid'
+        '409':
+          description: an existing event already exists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+        description: Event to add
+    get:
+      tags:
+        - developers
+      summary: Gets filtered events
+      operationId: getEvents
+      description: |
+        Returns array of events.
+      parameters:
+        - in: query
+          name: searchBoundaryLat1
+          description: pass an search location map boundary lat1
+          required: true
+          schema:
+            type: string
+          example: '45.000000'
+        - in: query
+          name: searchBoundaryLng1
+          description: pass an search location map boundary lat2
+          required: true
+          schema:
+            type: string
+          example: '-75.111111'
+        - in: query
+          name: searchBoundaryLat2
+          description: pass an search location map boundary lng1
+          required: true
+          schema:
+            type: string
+          example: '46.000000'
+        - in: query
+          name: searchBoundaryLng2
+          description: pass an search location map boundary lng2
+          required: true
+          schema:
+            type: string
+          example: '-76.111111'
+        - in: query
+          name: searchCategoryId
+          description: pass an optional search category id for looking up event
+          required: false
+          schema:
+            type: string
+          example: 'a45dd0a7-2f6a-443c-95c6-cfa855346784'
+        - in: query
+          name: searchTerm
+          description: pass an optional search term id for looking up event
+          required: false
+          schema:
+            type: string
+          example: 'Toys'
+        - in: query
+          name: skip
+          description: number of records to skip for pagination
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+          example: '0'
+        - in: query
+          name: limit
+          description: maximum number of records to return
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 500
+          example: '500'
+        - in: query
+          name: startDate
+          description: Start date of events to find
+          schema:
+            type: string
+          example: '2018-08-01T09:00:00'
+          required: true
+        - in: query
+          name: endtDate
+          required: true
+          description: End date of events to find
+          schema:
+            type: string
+          example: '2018-08-01T15:00:00'
+      responses:
+        '200':
+          description: gets filtered events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+                example:
+                  - id: 'a45dd0a7-2f6a-443c-95c6-cfa855346111'
+                    name: 'The Great Barrhaven Garage Sale Event'
+                    address: '204 Wabiskaw Private, Ottawa, ON K2J0E6'
+                    startDateTime: '2016-08-29T09:00:00.001Z'
+                    endDateTime: '2016-08-29T09:00:00.001Z'
+                    eventLocation: 
+                      lat: '45.41117'
+                      lng: '-75.69812'
+                    eventCategories: 
+                      - name: 'Multi-Family'
+                        id: 'a45dd0a7-aaaa-443c-95c6-cfa855346111'
+                        description: 'Multi-house, multi-family, garage sale event.'
+                      - name: 'Single-Family'
+                        id: 'a45dd0a7-aaaa-443c-95c6-cfa85534222'
+                        description: 'One house, one family, garage sale event.'
+                  - id: 'a45dd0a7-2f6a-443c-95c6-cfa855346222'
+                    name: 'The Great Barrhaven Garage Sale Event'
+                    address: '204 Wabiskaw Private, Ottawa, ON K2J0E6'
+                    startDateTime: '2016-08-29T09:00:00.001Z'
+                    endDateTime: '2016-08-29T15:00:00.001Z'
+                    eventLocation: 
+                      lat: '45.41117'
+                      lng: '-75.69812'
+                    eventCategories: 
+                      name: 'Single-Family'
+                      id: 'a45dd0a7-aaaa-443c-95c6-cfa85534222'
+                      description: 'One house, one family, garage sale event.'
+
+        
+components:
+
+  examples:
+    single-family:
+      value:
+        name: 'aSingle-Family'
+        id: 'a45dd0a7-aaaa-443c-95c6-cfa855346784'
+        description: 'One house, one family, garage sale event.'
+
+    multi-family:
+      value:
+        name: 'aMulti-Family'
+        id: 'a45dd0a7-aaaa-443c-95c6-cfa855346784'
+        description: 'Multi-house, Multi-family, garage sale event.'
+
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      example: a45dd0a7-2f6a-443c-95c6-cfa855346784
+    Name:
+      type: string
+      example: 'The Great Barrhaven Garage Sale Event'
+    Address:
+      type: string
+      example: '204 Wabiskaw Private, Ottawa, ON K2J0E6'
+    DateTime:
+      type: string
+      format: date-time
+      example: '2016-08-29T09:00:00.001Z'
+    Category:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          $ref: '#/components/schemas/Name' 
+        description:
+          type: string
+          example: |
+            'One house, one family, garage sale event.'
+      example:
+        - name: 'Single-Family'
+          id: 'a45dd0a7-aaaa-443c-95c6-cfa855346784'
+          description: 'One house, one family, garage sale event.'
+    Coordinates:
+      type: object
+      required:
+        - lat
+        - lng
+      properties:
+        lat:
+          type: string
+          example: '45.41117'
+        lng:
+          type: string
+          example: '-75.69812'
+    Event:
+      type: object
+      required:
+        - name
+        - address
+        - startDateTime
+        - endDateTime
+        - eventLocation
+        - eventCategories
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          $ref: '#/components/schemas/Name'
+        address:
+          $ref: '#/components/schemas/Address'
+        startDateTime:
+          $ref: '#/components/schemas/DateTime'
+        endDateTime:
+          $ref: '#/components/schemas/DateTime'
+        eventLocation:
+          $ref: '#/components/schemas/Coordinates'
+        eventCategories:
+          $ref: '#/components/schemas/Category'
